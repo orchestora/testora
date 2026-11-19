@@ -12,6 +12,13 @@ path = "src/main.rs"
 anyhow.workspace = true
 clap.workspace = true
 reqwest.workspace = true
+serde.workspace = true
 tokio.workspace = true
+url.workspace = true
 uuid.workspace = true
 testora-contracts = { path = "../../crates/contracts" }
+
+[dev-dependencies]
+axum.workspace = true
+testora-api = { path = "../api" }
+tokio.workspace = true

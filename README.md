@@ -34,16 +34,33 @@ cargo run -p testora-cli -- env status <uuid-from-create>
 cargo run -p testora-cli -- env destroy <uuid-from-create>
 ```
 
-The API binds to `127.0.0.1:8080` only. Restarting it clears records. `create` and `destroy` change **in-memory state only**. Authentication, access control, persistence, queues, resource provisioners, test runners, artifact storage and production HTTPS are **not implemented**.
+The API listens on `127.0.0.1:8080` by default and refuses any non-loopback address. Restarting it clears records. `create` and `destroy` change **in-memory state only**. Authentication, access control, persistence, queues, resource provisioners, test runners, artifact storage and production HTTPS are **not implemented**.
+
+Port 8080 already taken? Pick another loopback port for both sides:
+
+```sh
+TESTORA_API_BIND=127.0.0.1:18080 cargo run -p testora-api
+TESTORA_API_URL=http://127.0.0.1:18080 cargo run -p testora-cli -- ping
+```
+
+The CLI only talks to plain-HTTP loopback URLs (`localhost`, `127.0.0.0/8`, `::1`). Project names and regions are validated by the same rules on the client and the server (`testora-contracts`).
+
+## Test
+
+```sh
+cargo test --workspace
+```
+
+This covers the contract validation rules, every API endpoint (status codes, JSON error bodies, idempotent destroy, concurrent creates), and end-to-end runs of the real `testora` binary against an in-process API. Tests bind random ports only, so they don't clash with anything running locally.
 
 ## Next tasks
 
-1. Add tests for API endpoints and request validation.
-2. Define OpenAPI and add a versioned `testora.yaml` contract.
-3. Implement production authentication, organization RBAC and SQLx repository layer **in the private control-plane repository**.
-4. Integrate environment execution providers **in the private platform repository**.
-5. Add proper CLI login (OAuth PKCE/device flow), token storage and HTTPS.
-6. Secure release process and publish binaries only after validation.
+1. Define OpenAPI and a versioned `testora.yaml` manifest contract.
+2. Point the CLI at the Testora platform API with a local test token.
+3. Add production CLI login (OAuth device flow / PKCE), secure token storage and HTTPS.
+4. Secure, signed release process; publish binaries only after validation.
+
+Authentication, persistence and environment execution live in the private Testora platform, not in this repository.
 
 ## Open-core note
 
